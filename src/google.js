@@ -23,7 +23,7 @@ dwv.google.Auth = function ()
     var immediate = false;
 
     // The Client ID obtained from the Google Developers Console. Replace with your own Client ID.
-    this.clientId = "544445548355-7pli7rbg578hslnngnkj7ledcg6g5ejo.apps.googleusercontent.com";
+    this.clientId = "739581003000-7rts1aa1a2he7ifkbaev273r50fvieah.apps.googleusercontent.com";
     // The scope to use to access user's Drive items.
     this.scope = ['https://www.googleapis.com/auth/drive.readonly'];
 
@@ -154,7 +154,7 @@ dwv.google.Drive = function ()
     var idList = null;
 
     // The Browser API key obtained from the Google Developers Console.
-    this.apiKey = 'AIzaSyA5YAedAwoQsBZ-TzVEEVkv2ezD5hqe4s0';
+    this.apiKey = 'AIzaSyCzFQT-l9u1_Q4x-fw3dtDNZigfNivKlvg';
 
     /**
     * Set the ids to ask for download link.
