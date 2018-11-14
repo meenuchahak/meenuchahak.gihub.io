@@ -31,14 +31,17 @@ dwv.google.Auth = function ()
     * Load the API and authentify.
     */
     this.load = function () {
+    	console.log("dwv.google.Auth>>load")
         immediate = false;
         gapi.load('auth', {'callback': onApiLoad});
+        console.log("dwv.google.Auth>>load done")
     };
 
     /**
      * Load the API and authentify silently.
      */
      this.loadSilent = function () {
+    	 console.log("dwv.google.Auth>>loadSilent")
          immediate = true;
          gapi.load('auth', {'callback': onApiLoad});
      };
@@ -61,6 +64,7 @@ dwv.google.Auth = function ()
     function onApiLoad() {
         // see https://developers.google.com/api-client-library/...
         //   ...javascript/reference/referencedocs#gapiauthauthorizeparams
+    	console.log("dwv.google.Auth>>onApiLoad")
         gapi.auth.authorize({
             'client_id': self.clientId,
             'scope': self.scope,
@@ -68,6 +72,7 @@ dwv.google.Auth = function ()
             },
             handleResult
         );
+    	console.log("dwv.google.Auth>>onApiLoad done authorization")
     }
 
     /**
@@ -77,6 +82,7 @@ dwv.google.Auth = function ()
     *   ...javascript/reference/referencedocs#OAuth20TokenObject
     */
     function handleResult(authResult) {
+    	console.log("dwv.google.Auth>>handleResult " + authResult)
         if (authResult && !authResult.error) {
             self.onload();
         }
@@ -99,6 +105,7 @@ dwv.google.Picker = function ()
     * Load API and create picker.
     */
     this.load = function () {
+    	console.log("dwv.google.Picker>>load")
         gapi.load('picker', {'callback': onApiLoad});
     };
 
@@ -112,12 +119,19 @@ dwv.google.Picker = function ()
     * Create the picker.
     */
     function onApiLoad() {
-        var view = new google.picker.View(google.picker.ViewId.DOCS);
-        view.setMimeTypes("application/dicom");
+        //var view = new google.picker.View(google.picker.ViewId.DOCS);
+        //view.setMimeTypes("application/dicom");
+    	
+    	console.log("dwv.google.Picker>>onApiLoad")
+    	var view = new google.picker.DocsView(); // [MNK]
+    	view.setIncludeFolders(true);
+    	view.setMimeTypes('application/vnd.google-apps.folder');
+    	view.setSelectFolderEnabled(true);
+    	
         // see https://developers.google.com/picker/docs/reference#PickerBuilder
         var picker = new google.picker.PickerBuilder()
             .enableFeature(google.picker.Feature.NAV_HIDDEN)
-            .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+            //.enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
             .setOAuthToken(gapi.auth.getToken().access_token)
             .addView(view)
             .setCallback(handleResult)
@@ -137,6 +151,7 @@ dwv.google.Picker = function ()
             for (var i = 0; i < data.docs.length; ++i) {
                 ids[ids.length] = data.docs[i].id;
             }
+            console.log("dwv.google.Picker ids: " + ids)
             self.onload(ids);
         }
     }
@@ -189,7 +204,7 @@ dwv.google.Drive = function ()
         gapi.client.setApiKey(self.apiKey);
 
         var func = createApiLoad(self.getIds());
-        gapi.client.load('drive', 'v3', func);
+        gapi.client.load('drive', 'v2', func);
     };
 
     /**
@@ -216,6 +231,7 @@ dwv.google.Drive = function ()
         var batch = gapi.client.newBatch();
 
         for (var i = 0; i < ids.length; ++i) {
+        	console.log("dwv.google.Drive>>onApiLoad id: " + ids[i])
             // Can't make it work, HTTPRequest sends CORS error...
             // see https://developers.google.com/drive/v3/reference/files/get
             //var request = gapi.client.drive.files.get({
@@ -225,9 +241,13 @@ dwv.google.Drive = function ()
             // File path with v2??
             // see https://developers.google.com/api-client-library/...
             //   ...javascript/reference/referencedocs#gapiclientrequestargs
-            var request = gapi.client.request({
-                'path': '/drive/v2/files/' + ids[i],
-                'method': 'GET'
+            //var request = gapi.client.request({
+                //'path': '/drive/v2/files/' + ids[i],
+                //'method': 'GET'
+            //});
+            
+            var request = gapi.client.drive.children.list({
+                'folderId' : ids[i]
             });
 
             // add to batch
@@ -237,6 +257,32 @@ dwv.google.Drive = function ()
         // execute the batch
         batch.execute( handleDriveLoad );
     }
+    
+    function fetchFiles(ids) {
+    	var batch = gapi.client.newBatch();
+    	
+    	for (var i = 0; i < ids.length; ++i) {
+    		var request = gapi.client.request({
+    			'path': '/drive/v2/files/' + ids[i],
+    			'method': 'GET'
+    		})
+    		// add to batch
+    		batch.add(request)
+    	}
+    	// execute the batch
+    	batch.execute( handleFilesLoad );
+    }
+    
+    function handleFilesLoad(resp) {
+    	var urls = [];
+    	var respKeys = Object.keys(resp);
+    	for (var i = 0; i < respKeys.length; ++i) {
+    		urls[urls.length] = resp[respKeys[i]].result.downloadUrl;
+    	}
+    	console.log("dwv.google.Drive>> length: " + urls.length)
+    	// call onload
+    	self.onload(urls)
+    }
 
     /**
     * Launch callback when all queries have returned.
@@ -244,16 +290,18 @@ dwv.google.Drive = function ()
     * See https://developers.google.com/api-client-library/...
     *   ...javascript/reference/referencedocs#gapiclientRequestexecute
     */
-    function handleDriveLoad(resp) {
-        // link list
-        var urls = [];
+    function handleDriveLoad(resp) { // TODO [MNK: handle multi page response]
+        var ids = [];
         // ID-response map of each requests response
         var respKeys = Object.keys(resp);
         for ( var i = 0; i < respKeys.length; ++i ) {
-            urls[urls.length] = resp[respKeys[i]].result.downloadUrl;
+        	files = resp[respKeys[i]].result.items
+        	for (var f = 0; f < files.length; ++f) {
+        		console.log("file: " + files[f].id)
+        		ids.push(files[f].id)
+        	}
         }
-        // call onload
-        self.onload(urls);
+        fetchFiles(ids)
     }
 };
 
@@ -284,7 +332,8 @@ dwv.gui.GoogleDriveLoad = function (app)
      */
     this.setup = function()
     {
-        // behind the scenes authentification to avoid popup blocker
+        console.log("dwv.gui.GoogleDriveLoad>>setup")
+    	// behind the scenes authentification to avoid popup blocker
         var gAuth = new dwv.google.Auth();
         gAuth.loadSilent();
 
@@ -307,7 +356,8 @@ dwv.gui.GoogleDriveLoad = function (app)
      */
     this.display = function (bool)
     {
-        // gdrive div element
+        console.log("dwv.gui.GoogleDriveLoad>>display bool: " + bool)
+    	// gdrive div element
         var node = app.getElement("loaderlist");
         var filediv = node.getElementsByClassName("gdrivediv")[0];
         filediv.style.display = bool ? "" : "none";
