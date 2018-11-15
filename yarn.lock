@@ -571,7 +571,7 @@ duplexify@^3.5.1:
     readable-stream "^2.0.0"
     stream-shift "^1.0.0"
 
-dwv@/home/user/tagging/dwv-jqmobile/node_modules/dwv/:
+"dwv@file:../../tagging/dwv-jqmobile/node_modules/dwv":
   version "0.25.2"
   dependencies:
     i18next "~11.9.0"
@@ -581,10 +581,8 @@ dwv@/home/user/tagging/dwv-jqmobile/node_modules/dwv/:
     konva "~2.4.0"
     magic-wand-js "~1.0.0"
 
-dwv@0.25.2:
+"dwv@file:./node_modules/dwv/":
   version "0.25.2"
-  resolved "https://registry.yarnpkg.com/dwv/-/dwv-0.25.2.tgz#ab2c98be6abae323cc1f15cfeb0b706d6373f412"
-  integrity sha512-BPL5RtxpJ9ab9kBwIZ7Kpcs7LEF/jgZhmrz+TV6JoEtfnA9WFxZ68OMs9syiS/ZgONYY80iMr7csUOdU48GJAA==
   dependencies:
     i18next "~11.9.0"
     i18next-browser-languagedetector "~2.2.0"
@@ -1509,10 +1507,10 @@ isstream@0.1.x, isstream@~0.1.2:
   resolved "https://registry.yarnpkg.com/isstream/-/isstream-0.1.2.tgz#47e63f7af55afa6f92e1500e690eb8b8529c099a"
   integrity sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=
 
-jquery@~2.1.4:
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-2.1.4.tgz#228bde698a0c61431dc2630a6a154f15890d2317"
-  integrity sha1-IoveaYoMYUMdwmMKahVPFYkNIxc=
+jquery@>=3.0.0:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
+  integrity sha512-Ubldcmxp5np52/ENotGxlLe6aGMvmF4R8S6tZjsP6Knsaxd/xp3Zrh50cG93lR6nPXyUFwzN3ZSOQI0wRJNdGg==
 
 js-yaml@~3.5.2:
   version "3.5.5"

@@ -15,7 +15,7 @@
     "url": "git://github.com/ivmartel/dwv-jqmobile.git"
   },
   "dependencies": {
-    "dwv": "/home/user/tagging/dwv-jqmobile/node_modules/dwv/",
+    "dwv": "file:./node_modules/dwv/",
     "jquery": ">=3.0.0",
     "nprogress": "~0.2.0"
   },
