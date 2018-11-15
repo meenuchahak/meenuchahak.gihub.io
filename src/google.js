@@ -33,9 +33,7 @@ dwv.google.Auth = function ()
     this.load = function () {
     	console.log("dwv.google.Auth>>load")
         immediate = false;
-    	if (!gapi) {
-    		console.log("gapi not loaded")
-    	}
+    	console.log("gapi: " + gapi);
     	gapi.load('auth2', self.onApiLoad);
 //        gapi.load('auth2', {'callback': onApiLoad, 'onerror': function() {
 //            console.log('gapi.client failed to load!');
