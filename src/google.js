@@ -64,7 +64,7 @@ dwv.google.Auth = function ()
     /**
     * Authentificate.
     */
-    this.onApiLoad() = function() {
+    this.onApiLoad = function() {
         // see https://developers.google.com/api-client-library/...
         //   ...javascript/reference/referencedocs#gapiauthauthorizeparams
     	console.log("dwv.google.Auth>>onApiLoad")
