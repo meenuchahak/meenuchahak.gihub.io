@@ -33,7 +33,9 @@ dwv.google.Auth = function ()
     this.load = function () {
     	console.log("dwv.google.Auth>>load")
         immediate = false;
-        gapi.load('auth', {'callback': onApiLoad});
+        gapi.load('auth2', {'callback': onApiLoad, 'onerror': function() {
+            console.log('gapi.client failed to load!');
+          } });
         console.log("dwv.google.Auth>>load done")
     };
 
@@ -43,7 +45,7 @@ dwv.google.Auth = function ()
      this.loadSilent = function () {
     	 console.log("dwv.google.Auth>>loadSilent")
          immediate = true;
-         gapi.load('auth', {'callback': onApiLoad});
+         gapi.load('auth2', {'callback': onApiLoad});
      };
 
     /**
@@ -65,7 +67,7 @@ dwv.google.Auth = function ()
         // see https://developers.google.com/api-client-library/...
         //   ...javascript/reference/referencedocs#gapiauthauthorizeparams
     	console.log("dwv.google.Auth>>onApiLoad")
-        gapi.auth.authorize({
+        gapi.auth2.authorize({
             'client_id': self.clientId,
             'scope': self.scope,
             'immediate': immediate
