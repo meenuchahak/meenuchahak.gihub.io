@@ -12,7 +12,7 @@
   "homepage": "https://ivmartel.github.io/dwv-jqmobile/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/meenuchahak/meenuchahak.gihub.io.git"
+    "url": "https://github.com/meenuchahak/meenuchahak.github.io.git"
   },
   "dependencies": {
     "dwv": "file:./node_modules/dwv/",
