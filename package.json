@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "dwv": "file:./node_modules/dwv/",
-    "jquery": ">=3.0.0",
+    "jquery": "~2.1.4",
     "nprogress": "~0.2.0"
   },
   "devDependencies": {
