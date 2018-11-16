@@ -31,29 +31,15 @@ dwv.google.Auth = function ()
     * Load the API and authentify.
     */
     this.load = function () {
-    	console.log("dwv.google.Auth>>load")
         immediate = false;
-    	console.log("gapi: " + gapi);
-    	console.log("onApiLoad: " + self.onApiLoad);
-    	try{
-//    		gapi.load('auth2', {'callback': self.onApiLoad, 'onerror': function() {
-//                console.log('gapi.client failed to load!');
-//            } });
-    		gapi.load('client:auth2', self.onApiLoad);
-    	}
-        catch(err) {
-        	console.log("error was: " + err.message);
-        }
-        console.log("dwv.google.Auth>>load done")
+    	gapi.load('client:auth2', self.onApiLoad);
     };
 
     /**
      * Load the API and authentify silently.
      */
      this.loadSilent = function () {
-    	 console.log("dwv.google.Auth>>loadSilent")
          immediate = true;
-         //gapi.load('auth2', {'callback': self.onApiLoad});
     	 gapi.load('client:auth2', self.onApiLoad);
      };
 
@@ -75,7 +61,6 @@ dwv.google.Auth = function ()
     this.onApiLoad = function() {
         // see https://developers.google.com/api-client-library/...
         //   ...javascript/reference/referencedocs#gapiauthauthorizeparams
-    	console.log("dwv.google.Auth>>onApiLoad")
     	gapi.client.setApiKey("")
         gapi.auth2.authorize({
             'client_id': self.clientId,
@@ -85,7 +70,6 @@ dwv.google.Auth = function ()
             },
             handleResult
         );
-    	console.log("dwv.google.Auth>>onApiLoad done authorization")
     };
 
     /**
@@ -95,7 +79,6 @@ dwv.google.Auth = function ()
     *   ...javascript/reference/referencedocs#OAuth20TokenObject
     */
     function handleResult(authResult) {
-    	console.log("dwv.google.Auth>>handleResult " + authResult)
         if (authResult && !authResult.error) {
             self.onload();
         }
@@ -118,7 +101,6 @@ dwv.google.Picker = function ()
     * Load API and create picker.
     */
     this.load = function () {
-    	console.log("dwv.google.Picker>>load")
         gapi.load('picker', {'callback': onApiLoad});
     };
 
@@ -135,7 +117,6 @@ dwv.google.Picker = function ()
         //var view = new google.picker.View(google.picker.ViewId.DOCS);
         //view.setMimeTypes("application/dicom");
     	
-    	console.log("dwv.google.Picker>>onApiLoad")
     	var view = new google.picker.DocsView(); // [MNK]
     	view.setIncludeFolders(true);
     	view.setMimeTypes('application/vnd.google-apps.folder');
@@ -164,7 +145,6 @@ dwv.google.Picker = function ()
             for (var i = 0; i < data.docs.length; ++i) {
                 ids[ids.length] = data.docs[i].id;
             }
-            console.log("dwv.google.Picker ids: " + ids)
             self.onload(ids);
         }
     }
@@ -244,7 +224,6 @@ dwv.google.Drive = function ()
         var batch = gapi.client.newBatch();
 
         for (var i = 0; i < ids.length; ++i) {
-        	console.log("dwv.google.Drive>>onApiLoad id: " + ids[i])
             // Can't make it work, HTTPRequest sends CORS error...
             // see https://developers.google.com/drive/v3/reference/files/get
             //var request = gapi.client.drive.files.get({
@@ -292,7 +271,6 @@ dwv.google.Drive = function ()
     	for (var i = 0; i < respKeys.length; ++i) {
     		urls[urls.length] = resp[respKeys[i]].result.downloadUrl;
     	}
-    	console.log("dwv.google.Drive>> length: " + urls.length)
     	// call onload
     	self.onload(urls)
     }
@@ -310,7 +288,6 @@ dwv.google.Drive = function ()
         for ( var i = 0; i < respKeys.length; ++i ) {
         	files = resp[respKeys[i]].result.items
         	for (var f = 0; f < files.length; ++f) {
-        		console.log("file: " + files[f].id)
         		ids.push(files[f].id)
         	}
         }
@@ -345,7 +322,6 @@ dwv.gui.GoogleDriveLoad = function (app)
      */
     this.setup = function()
     {
-        console.log("dwv.gui.GoogleDriveLoad>>setup")
     	// behind the scenes authentification to avoid popup blocker
         var gAuth = new dwv.google.Auth();
         gAuth.loadSilent();
@@ -369,7 +345,6 @@ dwv.gui.GoogleDriveLoad = function (app)
      */
     this.display = function (bool)
     {
-        console.log("dwv.gui.GoogleDriveLoad>>display bool: " + bool)
     	// gdrive div element
         var node = app.getElement("loaderlist");
         var filediv = node.getElementsByClassName("gdrivediv")[0];
