@@ -2,6 +2,9 @@
 node_modules
 bower_components
 
+# Except this file from node_modules
+!node_modules/dwv/dist/dwv.js
+
 # build
 build
 
