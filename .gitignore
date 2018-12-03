@@ -2,6 +2,9 @@
 node_modules
 bower_components
 
+# Track dwv.js
+!node_modules/dwv/dist/dwv.js
+
 # build
 build
 
@@ -9,3 +12,4 @@ build
 npm-debug.log
 yarn-error.log
 index-dev.html
+.vscode

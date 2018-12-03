@@ -25,7 +25,7 @@ dwv.google.Auth = function ()
     // The Client ID obtained from the Google Developers Console. Replace with your own Client ID.
     this.clientId = "739581003000-7rts1aa1a2he7ifkbaev273r50fvieah.apps.googleusercontent.com";
     // The scope to use to access user's Drive items.
-    this.scope = 'https://www.googleapis.com/auth/drive.readonly';
+    this.scope = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file';
 
     /**
     * Load the API and authentify.
@@ -61,7 +61,7 @@ dwv.google.Auth = function ()
     this.onApiLoad = function() {
         // see https://developers.google.com/api-client-library/...
         //   ...javascript/reference/referencedocs#gapiauthauthorizeparams
-    	gapi.client.setApiKey("")
+    	gapi.client.setApiKey("");
         gapi.auth2.authorize({
             'client_id': self.clientId,
             'scope': self.scope,
@@ -85,7 +85,7 @@ dwv.google.Auth = function ()
         else {
             self.onfail();
         }
-    };
+    }
 };
 
 /**
@@ -238,8 +238,8 @@ dwv.google.Drive = function ()
                 //'method': 'GET'
             //});
             
-            var request = gapi.client.drive.children.list({
-                'folderId' : ids[i]
+            var request = gapi.client.drive.files.list({
+                q : "'" + ids[i] + "' in parents and mimeType = 'application/dicom'"
             });
 
             // add to batch
@@ -257,9 +257,9 @@ dwv.google.Drive = function ()
     		var request = gapi.client.request({
     			'path': '/drive/v2/files/' + ids[i],
     			'method': 'GET'
-    		})
+    		});
     		// add to batch
-    		batch.add(request)
+    		batch.add(request);
     	}
     	// execute the batch
     	batch.execute( handleFilesLoad );
@@ -272,7 +272,7 @@ dwv.google.Drive = function ()
     		urls[urls.length] = resp[respKeys[i]].result.downloadUrl;
     	}
     	// call onload
-    	self.onload(urls)
+    	self.onload(urls);
     }
 
     /**
@@ -286,12 +286,12 @@ dwv.google.Drive = function ()
         // ID-response map of each requests response
         var respKeys = Object.keys(resp);
         for ( var i = 0; i < respKeys.length; ++i ) {
-        	files = resp[respKeys[i]].result.items
+        	var files = resp[respKeys[i]].result.items;
         	for (var f = 0; f < files.length; ++f) {
-        		ids.push(files[f].id)
+        		ids.push(files[f].id);
         	}
         }
-        fetchFiles(ids)
+        fetchFiles(ids);
     }
 };
 
