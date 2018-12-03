@@ -25,7 +25,7 @@ dwv.google.Auth = function ()
     // The Client ID obtained from the Google Developers Console. Replace with your own Client ID.
     this.clientId = "739581003000-7rts1aa1a2he7ifkbaev273r50fvieah.apps.googleusercontent.com";
     // The scope to use to access user's Drive items.
-    this.scope = 'https://www.googleapis.com/auth/drive.readonly';
+    this.scope = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file';
 
     /**
     * Load the API and authentify.
@@ -238,8 +238,8 @@ dwv.google.Drive = function ()
                 //'method': 'GET'
             //});
             
-            var request = gapi.client.drive.children.list({
-                'folderId' : ids[i]
+            var request = gapi.client.drive.files.list({
+                q : "'" + ids[i] + "' in parents and mimeType = 'application/dicom'"
             });
 
             // add to batch
@@ -269,7 +269,7 @@ dwv.google.Drive = function ()
     	var urls = [];
     	var respKeys = Object.keys(resp);
     	for (var i = 0; i < respKeys.length; ++i) {
-    		urls[urls.length] = resp[respKeys[i]].result.downloadUrl;
+            urls[urls.length] = resp[respKeys[i]].result.downloadUrl;
     	}
     	// call onload
     	self.onload(urls);
