@@ -24,7 +24,7 @@ dwv.google.Auth = function () {
   // The Client ID obtained from the Google Developers Console. Replace with your own Client ID.
   this.clientId = "739581003000-7rts1aa1a2he7ifkbaev273r50fvieah.apps.googleusercontent.com";
   // The scope to use to access user's Drive items.
-  this.scope = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file';
+  this.scope = 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.metadata https://www.googleapis.com/auth/drive.file';
 
   /**
   * Load the API and authentify.
