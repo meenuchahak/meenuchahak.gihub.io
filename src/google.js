@@ -392,6 +392,18 @@ dwv.google.FileOps = function () {
     });
   };
 
+  this.isTaggingCompletedFor = function (fileName, callback) {
+    checkExistingProgress(function (doneData) {
+      if (doneData) {
+        var doneFileNames = JSON.parse(doneData[2]);
+        var fileDone = Object.keys(doneFileNames).indexOf(fileName) > -1;
+        callback(fileDone);
+      } else {
+        callback(false);
+      }
+    });
+  };
+
   function checkExistingProgress(callback) {
     var file, id, content;
     retrieveAllFiles(function (files) {
