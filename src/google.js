@@ -10,6 +10,7 @@ dwv.google = dwv.google || {};
 // external
 var gapi = gapi || {};
 var google = google || {};
+dwv.google.selectedFolder = null;
 
 /**
 * Google Authentification class.
@@ -144,9 +145,9 @@ dwv.google.Picker = function () {
       for (var i = 0; i < data.docs.length; ++i) {
         var iter = data.docs[i];
         ids[ids.length] = iter.id;
-        if (iter.name === "Audit") {
+        folderName = iter.name;
+        if (folderName === "Audit") {
           console.log('Auditing');
-          folderName = iter.name;
         }
       }
       self.onload(ids, folderName);
@@ -178,6 +179,7 @@ dwv.google.Drive = function () {
 
   this.setFolder = function (folderName) {
     folder = folderName;
+    dwv.google.selectedFolder = folderName;
   }
 
   this.getFolder = function () {
@@ -295,7 +297,6 @@ dwv.google.Drive = function () {
     var respKeys = Object.keys(resp);
     if (self.getFolder() === 'Audit') {
       var sorted = Object.values(resp).sort((a,b) => (a.result.title > b.result.title) ? 1 : ((b.result.title > a.result.title) ? -1 : 0));
-      console.log(sorted);
       for (var i = 0; i < sorted.length; ++i) {
         var item = sorted[i].result;
         var key = item.title.replace('.json', '')
@@ -418,10 +419,15 @@ dwv.google.FileOps = function () {
     var progress, existingProgress;
 
     checkExistingProgress(function ([id, file, existingStat]) {
+      var progressFile = "progress.json";
       existingProgress = existingStat;
+
+      if (dwv.google.selectedFolder === "Audit") {
+        progressFile = "audit-" + progressFile;
+      }
       if (existingProgress) {
         progress = Object.assign(JSON.parse(existingProgress), appendProgress);
-        var updatedFile = new File([JSON.stringify(progress)], "progress.json", {
+        var updatedFile = new File([JSON.stringify(progress)], progressFile, {
           type: 'application/json'
         });
         updateFile(id, file, updatedFile, function (params) {
@@ -429,7 +435,7 @@ dwv.google.FileOps = function () {
         });
       } else {
         progress = appendProgress;
-        var tempfile = new File([JSON.stringify(progress)], "progress.json", {
+        var tempfile = new File([JSON.stringify(progress)], progressFile, {
           type: 'application/json'
         });
 
@@ -501,6 +507,7 @@ dwv.google.FileOps = function () {
    * @param {Function} callback Function to call when the request is complete.
    */
   function retrieveAllFiles(callback) {
+    var progressFile = "progress.json";
     var retrievePageOfFiles = function (request, result) {
       request.execute(function (resp) {
         result = result.concat(resp.items);
@@ -515,8 +522,11 @@ dwv.google.FileOps = function () {
         }
       });
     };
+    if (dwv.google.selectedFolder === "Audit") {
+      progressFile = "audit-" + progressFile;
+    }
     var initialRequest = gapi.client.drive.files.list({
-      q: "title = 'progress.json' and trashed = false"
+      q: "title = '" + progressFile + "' and trashed = false"
     });
     retrievePageOfFiles(initialRequest, []);
   }
