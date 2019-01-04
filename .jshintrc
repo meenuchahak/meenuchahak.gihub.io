@@ -9,5 +9,6 @@
     },
     "curly": true,
     "newcap": true,
-    "indent": 4
+    "indent": 2,
+    "esversion": 6
 }

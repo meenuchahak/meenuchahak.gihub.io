@@ -10,6 +10,7 @@ dwv.google = dwv.google || {};
 // external
 var gapi = gapi || {};
 var google = google || {};
+dwv.google.selectedFolder = null;
 
 /**
 * Google Authentification class.
@@ -137,13 +138,19 @@ dwv.google.Picker = function () {
   * See https://developers.google.com/picker/docs/results
   */
   function handleResult(data) {
+    var folderName = '';
     if (data.action === google.picker.Action.PICKED &&
       data.docs.length !== 0) {
       var ids = [];
       for (var i = 0; i < data.docs.length; ++i) {
-        ids[ids.length] = data.docs[i].id;
+        var iter = data.docs[i];
+        ids[ids.length] = iter.id;
+        folderName = iter.name;
+        if (folderName === "Audit") {
+          console.log('Auditing');
+        }
       }
-      self.onload(ids);
+      self.onload(ids, folderName);
     }
   }
 };
@@ -157,6 +164,7 @@ dwv.google.Drive = function () {
   var self = this;
   // list of ids
   var idList = null;
+  var folder = null;
 
   // The Browser API key obtained from the Google Developers Console.
   this.apiKey = 'AIzaSyCzFQT-l9u1_Q4x-fw3dtDNZigfNivKlvg';
@@ -169,6 +177,15 @@ dwv.google.Drive = function () {
     idList = ids;
   };
 
+  this.setFolder = function (folderName) {
+    folder = folderName;
+    dwv.google.selectedFolder = folderName;
+  }
+
+  this.getFolder = function () {
+    return folder;
+  }
+
   /**
   * Get the ids to ask for download link.
   */
@@ -180,8 +197,11 @@ dwv.google.Drive = function () {
   * Load API and query drive for download links.
   * @param {Array} ids The list of file ids to ask for download link.
   */
-  this.loadIds = function (ids) {
+  this.loadIds = function (ids, folderName = false) {
     self.setIds(ids);
+    if (folderName) {
+      self.setFolder(folderName);
+    }
     self.load();
   };
 
@@ -219,6 +239,7 @@ dwv.google.Drive = function () {
   function onApiLoad(ids) {
     // group requests in batch (ans stay bellow quotas)
     var batch = gapi.client.newBatch();
+    var reqStates;
 
     for (var i = 0; i < ids.length; ++i) {
       // Can't make it work, HTTPRequest sends CORS error...
@@ -241,6 +262,14 @@ dwv.google.Drive = function () {
 
       // add to batch
       batch.add(request);
+
+      if (self.getFolder() === 'Audit') {
+        reqStates = gapi.client.drive.files.list({
+          q: "'" + ids[i] + "' in parents and mimeType = 'application/json'"
+        });
+
+        batch.add(reqStates);
+      }
     }
 
     // execute the batch
@@ -263,11 +292,31 @@ dwv.google.Drive = function () {
   }
 
   function handleFilesLoad(resp) {
+    var urlsObj = {};
     var urls = [];
     var respKeys = Object.keys(resp);
-    for (var i = 0; i < respKeys.length; ++i) {
-      urls[urls.length] = resp[respKeys[i]].result.downloadUrl;
+    if (self.getFolder() === 'Audit') {
+      var sorted = Object.values(resp).sort((a,b) => (a.result.title > b.result.title) ? 1 : ((b.result.title > a.result.title) ? -1 : 0));
+      for (var i = 0; i < sorted.length; ++i) {
+        var item = sorted[i].result;
+        var key = item.title.replace('.json', '')
+        if (!urlsObj[key]) {
+          urlsObj[key] = {};
+        }
+        if (item.mimeType === 'application/json') {
+          urlsObj[key]['state'] = item.downloadUrl;
+        } else {
+          urlsObj[key]['url'] = item.downloadUrl;
+        }
+        
+      }
+      urls = Object.values(urlsObj);
+    } else {
+      for (var i = 0; i < respKeys.length; ++i) {
+        urls[urls.length] = resp[respKeys[i]].result.downloadUrl;
+      }
     }
+    
     // call onload
     self.onload(urls);
   }
@@ -370,10 +419,15 @@ dwv.google.FileOps = function () {
     var progress, existingProgress;
 
     checkExistingProgress(function ([id, file, existingStat]) {
+      var progressFile = "progress.json";
       existingProgress = existingStat;
+
+      if (dwv.google.selectedFolder === "Audit") {
+        progressFile = "audit-" + progressFile;
+      }
       if (existingProgress) {
         progress = Object.assign(JSON.parse(existingProgress), appendProgress);
-        var updatedFile = new File([JSON.stringify(progress)], "progress.json", {
+        var updatedFile = new File([JSON.stringify(progress)], progressFile, {
           type: 'application/json'
         });
         updateFile(id, file, updatedFile, function (params) {
@@ -381,7 +435,7 @@ dwv.google.FileOps = function () {
         });
       } else {
         progress = appendProgress;
-        var tempfile = new File([JSON.stringify(progress)], "progress.json", {
+        var tempfile = new File([JSON.stringify(progress)], progressFile, {
           type: 'application/json'
         });
 
@@ -453,6 +507,7 @@ dwv.google.FileOps = function () {
    * @param {Function} callback Function to call when the request is complete.
    */
   function retrieveAllFiles(callback) {
+    var progressFile = "progress.json";
     var retrievePageOfFiles = function (request, result) {
       request.execute(function (resp) {
         result = result.concat(resp.items);
@@ -467,8 +522,11 @@ dwv.google.FileOps = function () {
         }
       });
     };
+    if (dwv.google.selectedFolder === "Audit") {
+      progressFile = "audit-" + progressFile;
+    }
     var initialRequest = gapi.client.drive.files.list({
-      q: "title = 'progress.json' and trashed = false"
+      q: "title = '" + progressFile + "' and trashed = false"
     });
     retrievePageOfFiles(initialRequest, []);
   }
