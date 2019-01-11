@@ -422,8 +422,8 @@ dwv.google.FileOps = function () {
       var progressFile = "progress.json";
       existingProgress = existingStat;
 
-      if (dwv.google.selectedFolder === "Audit") {
-        progressFile = "audit-" + progressFile;
+      if (dwv.google.selectedFolder === "Audit" || dwv.google.selectedFolder === "Test") {
+        progressFile = (dwv.google.selectedFolder).toLowerCase() + "-" + progressFile;
       }
       if (existingProgress) {
         progress = Object.assign(JSON.parse(existingProgress), appendProgress);
@@ -522,8 +522,8 @@ dwv.google.FileOps = function () {
         }
       });
     };
-    if (dwv.google.selectedFolder === "Audit") {
-      progressFile = "audit-" + progressFile;
+    if (dwv.google.selectedFolder === "Audit" || dwv.google.selectedFolder === "Test") {
+      progressFile = (dwv.google.selectedFolder).toLowerCase() + "-" + progressFile;
     }
     var initialRequest = gapi.client.drive.files.list({
       q: "title = '" + progressFile + "' and trashed = false"
