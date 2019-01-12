@@ -257,7 +257,7 @@ dwv.google.Drive = function () {
       //});
 
       var request = gapi.client.drive.files.list({
-        q: "'" + ids[i] + "' in parents and mimeType = 'application/dicom'"
+        q: "'" + ids[i] + "' in parents and mimeType = 'application/dicom' and trashed = false"
       });
 
       // add to batch
@@ -265,7 +265,7 @@ dwv.google.Drive = function () {
 
       if (self.getFolder() === 'Audit') {
         reqStates = gapi.client.drive.files.list({
-          q: "'" + ids[i] + "' in parents and mimeType = 'application/json'"
+          q: "'" + ids[i] + "' in parents and mimeType = 'application/json' and trashed = false"
         });
 
         batch.add(reqStates);
