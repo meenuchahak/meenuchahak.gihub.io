@@ -257,18 +257,20 @@ dwv.google.Drive = function () {
       //});
 
       var request = gapi.client.drive.files.list({
-        q: "'" + ids[i] + "' in parents and mimeType = 'application/dicom' and trashed = false"
+        q: "'" + ids[i] + "' in parents and mimeType = 'application/dicom' and trashed = false",
+        orderBy: "title"
       });
 
       // add to batch
-      batch.add(request);
+      batch.add(request, {'id': 'dicomSearch'});
 
       if (self.getFolder() === 'Audit') {
         reqStates = gapi.client.drive.files.list({
-          q: "'" + ids[i] + "' in parents and mimeType = 'application/json' and trashed = false"
+          q: "'" + ids[i] + "' in parents and mimeType = 'application/json' and trashed = false",
+          orderBy: "title"
         });
 
-        batch.add(reqStates);
+        batch.add(reqStates, {'id': 'stateSearch'});
       }
     }
 
