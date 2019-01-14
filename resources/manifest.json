@@ -22,9 +22,5 @@
       "src": "/dwv-jqmobile/demo/stable/resources/icons/dwv-128.png",
       "sizes": "128x128",
       "type": "image/png"
-    }, {
-      "src": "/dwv-jqmobile/demo/stable/resources/icons/dwv-256.png",
-      "sizes": "256x256",
-      "type": "image/png"
     }]
 }

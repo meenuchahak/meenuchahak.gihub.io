@@ -237,45 +237,42 @@ dwv.google.Drive = function () {
   * @param {Array} ids The list of file ids to ask for download link.
   */
   function onApiLoad(ids) {
-    // group requests in batch (ans stay bellow quotas)
-    var batch = gapi.client.newBatch();
-    var reqStates;
+    retrieveAllFiles(ids, (filesResult) => {
+      handleDriveLoad(filesResult);
+    });
+  }
 
-    for (var i = 0; i < ids.length; ++i) {
-      // Can't make it work, HTTPRequest sends CORS error...
-      // see https://developers.google.com/drive/v3/reference/files/get
-      //var request = gapi.client.drive.files.get({
-      //    'fileId': fileId, 'fields': 'webViewLink'
-      //});
-
-      // File path with v2??
-      // see https://developers.google.com/api-client-library/...
-      //   ...javascript/reference/referencedocs#gapiclientrequestargs
-      //var request = gapi.client.request({
-      //'path': '/drive/v2/files/' + ids[i],
-      //'method': 'GET'
-      //});
-
-      var request = gapi.client.drive.files.list({
-        q: "'" + ids[i] + "' in parents and mimeType = 'application/dicom' and trashed = false",
-        orderBy: "title"
+    /**
+   * Retrieve a list of File resources.
+   *
+   * @param {Function} callback Function to call when the request is complete.
+   */
+  function retrieveAllFiles(ids, callback) {
+    var retrievePageOfFiles = function (request, result) {
+      request.execute(function (resp) {
+        result = result.concat(resp.items);
+        var nextPageToken = resp.nextPageToken;
+        if (nextPageToken) {
+          var newReq = gapi.client.drive.files.list({
+            q: query,
+            orderBy: "title",
+            'pageToken': nextPageToken
+          });
+          retrievePageOfFiles(newReq, result);
+        } else {
+          callback(result);
+        }
       });
-
-      // add to batch
-      batch.add(request, {'id': 'dicomSearch'});
-
-      if (self.getFolder() === 'Audit') {
-        reqStates = gapi.client.drive.files.list({
-          q: "'" + ids[i] + "' in parents and mimeType = 'application/json' and trashed = false",
-          orderBy: "title"
-        });
-
-        batch.add(reqStates, {'id': 'stateSearch'});
-      }
+    };
+    var query = "'" + ids[0] + "' in parents and mimeType = 'application/dicom' and trashed = false";
+    if (dwv.google.selectedFolder === "Audit") {
+      query = "'" + ids[0] + "' in parents and (mimeType = 'application/dicom' or mimeType = 'application/json') and trashed = false";
     }
-
-    // execute the batch
-    batch.execute(handleDriveLoad);
+    var initialRequest = gapi.client.drive.files.list({
+      q: query,
+      orderBy: "title"
+    });
+    retrievePageOfFiles(initialRequest, []);
   }
 
   function fetchFiles(ids) {
@@ -331,13 +328,9 @@ dwv.google.Drive = function () {
   */
   function handleDriveLoad(resp) { // TODO [MNK: handle multi page response]
     var ids = [];
-    // ID-response map of each requests response
-    var respKeys = Object.keys(resp);
-    for (var i = 0; i < respKeys.length; ++i) {
-      var files = resp[respKeys[i]].result.items;
-      for (var f = 0; f < files.length; ++f) {
-        ids.push(files[f].id);
-      }
+    // ID-response map o < respKeys.length; ++i) {
+    for (var f = 0; f < resp.length; ++f) {
+      ids.push(resp[f].id);
     }
     fetchFiles(ids);
   }
